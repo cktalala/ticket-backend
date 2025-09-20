@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTicketDto, QueryTicketsDto } from './dto';
+import { CreateTicketDto, UpdateTicketDto, QueryTicketsDto } from './dto';
 
 @Injectable()
 export class TicketService {
@@ -73,5 +73,14 @@ export class TicketService {
     }
 
     return ticket;
+  }
+
+  async update(id: number, updateTicketDto: UpdateTicketDto) {
+    await this.findOne(id);
+
+    return this.prisma.ticket.update({
+      where: { id },
+      data: updateTicketDto,
+    });
   }
 }

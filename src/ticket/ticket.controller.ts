@@ -3,13 +3,14 @@ import {
   Get,
   Post,
   Body,
+  Patch,
   Param,
   ParseIntPipe,
   ValidationPipe,
   Query,
 } from '@nestjs/common';
 import { TicketService } from './ticket.service';
-import { CreateTicketDto, QueryTicketsDto } from './dto';
+import { CreateTicketDto, UpdateTicketDto, QueryTicketsDto } from './dto';
 
 @Controller('tickets')
 export class TicketController {
@@ -28,5 +29,13 @@ export class TicketController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.ticketService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) updateTicketDto: UpdateTicketDto,
+  ) {
+    return this.ticketService.update(id, updateTicketDto);
   }
 }

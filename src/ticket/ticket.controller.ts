@@ -1,17 +1,24 @@
 import {
   Controller,
   Get,
+  Post,
+  Body,
   Param,
   ParseIntPipe,
   ValidationPipe,
   Query,
 } from '@nestjs/common';
 import { TicketService } from './ticket.service';
-import { QueryTicketsDto } from './dto';
+import { CreateTicketDto, QueryTicketsDto } from './dto';
 
 @Controller('tickets')
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
+
+  @Post()
+  create(@Body(ValidationPipe) createTicketDto: CreateTicketDto) {
+    return this.ticketService.create(createTicketDto);
+  }
 
   @Get()
   findAll(@Query(ValidationPipe) queryDto: QueryTicketsDto) {

@@ -5,6 +5,7 @@ import {
   Body,
   Patch,
   Param,
+  Delete,
   ParseIntPipe,
   ValidationPipe,
   Query,
@@ -37,5 +38,10 @@ export class TicketController {
     @Body(ValidationPipe) updateTicketDto: UpdateTicketDto,
   ) {
     return this.ticketService.update(id, updateTicketDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.ticketService.remove(id);
   }
 }

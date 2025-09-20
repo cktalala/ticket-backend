@@ -83,4 +83,12 @@ export class TicketService {
       data: updateTicketDto,
     });
   }
+
+  async remove(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.ticket.delete({
+      where: { id },
+    });
+  }
 }

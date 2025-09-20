@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryTicketsDto } from './dto';
 
@@ -55,5 +55,17 @@ export class TicketService {
         totalPages: Math.ceil(total / pageSize),
       },
     };
+  }
+
+  async findOne(id: number) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException(`Ticket with ID ${id} not found`);
+    }
+
+    return ticket;
   }
 }

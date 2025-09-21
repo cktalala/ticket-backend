@@ -1,15 +1,44 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTicketDto, UpdateTicketDto, QueryTicketsDto } from './dto';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class TicketService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @InjectQueue('tickets') private readonly ticketsQueue: Queue,
+  ) {}
 
   async create(createTicketDto: CreateTicketDto) {
-    return this.prisma.ticket.create({
+    const ticket = await this.prisma.ticket.create({
       data: createTicketDto,
     });
+
+    await this.ticketsQueue.add(
+      'notify',
+      { ticketId: ticket.id },
+      {
+        jobId: `notify-${ticket.id}`,
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
+
+    await this.ticketsQueue.add(
+      'sla',
+      { ticketId: ticket.id },
+      {
+        jobId: `sla-${ticket.id}`,
+        delay: 15 * 60 * 1000,
+        removeOnComplete: true,
+      },
+    );
+
+    return ticket;
   }
 
   async findAll(queryDto: QueryTicketsDto) {

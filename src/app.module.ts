@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { TicketModule } from './ticket/ticket.module';
 import { ResponseInterceptor, HttpExceptionFilter } from './common';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -16,6 +17,12 @@ import { ResponseInterceptor, HttpExceptionFilter } from './common';
     }),
     PrismaModule,
     TicketModule,
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST ?? 'localhost',
+        port: Number(process.env.REDIS_PORT ?? 6379),
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [

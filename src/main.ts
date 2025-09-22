@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
-import { HttpStatus } from '@nestjs/common';
+import { ValidationPipe, BadRequestException } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3001);
+
+  app.enableCors();
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,9 +13,15 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
-      validationError: { target: false, value: false },
-      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      exceptionFactory: (errors) => {
+        const messages = errors
+          .map((error) => Object.values(error.constraints || {}).join(', '))
+          .filter((message) => message);
+        return new BadRequestException(messages);
+      },
     }),
   );
+
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

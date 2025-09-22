@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiErrorResponse } from '../interfaces/api-response.interface';
@@ -16,10 +17,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest();
     const status = exception.getStatus();
 
+    let message = exception.message;
+
+    if (exception instanceof BadRequestException) {
+      const exceptionResponse = exception.getResponse() as any;
+      if (
+        exceptionResponse?.message &&
+        Array.isArray(exceptionResponse.message)
+      ) {
+        message = exceptionResponse.message.join(', ');
+      } else if (typeof exceptionResponse?.message === 'string') {
+        message = exceptionResponse.message;
+      }
+    }
+
     const errorResponse: ApiErrorResponse = {
       status,
       error: HttpStatus[status] || 'Unknown Error',
-      message: exception.message,
+      message,
       timestamp: new Date().toISOString(),
       path: request.url,
     };

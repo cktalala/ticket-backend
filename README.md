@@ -1,98 +1,167 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Ticket Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS-based ticket management system with PostgreSQL database, Redis queue processing, and comprehensive API endpoints.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **CRUD Operations**: Full ticket lifecycle management
+- **Queue Processing**: Background job processing with BullMQ
+- **Database**: PostgreSQL with Prisma ORM
+- **Validation**: Request validation with class-validator
+- **Error Handling**: Global exception filters and response interceptors
+- **Admin Interface**: Queue monitoring and statistics
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech Stack
 
-## Project setup
+- **Framework**: NestJS
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Queue**: Redis + BullMQ
+- **Validation**: class-validator, class-transformer
+- **Testing**: Jest
 
-```bash
-$ yarn install
-```
+## Prerequisites
 
-## Compile and run the project
+- Node.js (v18+)
+- Docker & Docker Compose
+- PostgreSQL
+- Redis
+
+## Quick Start
+
+### 1. Clone and Install
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+git clone <repository-url>
+cd ticket-backend
+yarn install
 ```
 
-## Run tests
+### 2. Environment Setup
+
+Create `.env` file:
+
+```env
+DATABASE_URL=""
+REDIS_HOST=
+REDIS_PORT=
+PORT=3001
+```
+
+### 3. Start Services
 
 ```bash
-# unit tests
-$ yarn run test
+# Start PostgreSQL and Redis
+docker-compose up -d
 
-# e2e tests
-$ yarn run test:e2e
+# Generate Prisma client and run migrations
+npx prisma generate
+npx prisma db push
 
-# test coverage
-$ yarn run test:cov
+# Start development server
+yarn start:dev
 ```
 
-## Deployment
+Server runs on `http://localhost:3001`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## API Endpoints
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Tickets
+
+| Method | Endpoint       | Description                 |
+| ------ | -------------- | --------------------------- |
+| POST   | `/tickets`     | Create ticket               |
+| GET    | `/tickets`     | List tickets (with filters) |
+| GET    | `/tickets/:id` | Get ticket by ID            |
+| PATCH  | `/tickets/:id` | Update ticket               |
+| DELETE | `/tickets/:id` | Delete ticket               |
+
+### Admin
+
+| Method | Endpoint                    | Description      |
+| ------ | --------------------------- | ---------------- |
+| GET    | `/admin/queues/:name/stats` | Queue statistics |
+
+## Data Models
+
+### Ticket
+
+```typescript
+{
+  id: number;
+  title: string; // min 5 chars
+  description: string; // max 5000 chars
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  createdAt: DateTime;
+  updatedAt: DateTime;
+}
+```
+
+## Queue Jobs
+
+- **notify**: Notification processing
+- **sla**: SLA monitoring and alerts
+
+## Scripts
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+# Development
+yarn start:dev        # Watch mode
+yarn start:debug      # Debug mode
+
+# Production
+yarn build           # Build application
+yarn start:prod      # Production mode
+
+# Testing
+yarn test           # Unit tests
+yarn test:e2e       # E2E tests
+yarn test:cov       # Coverage report
+
+# Code Quality
+yarn lint           # ESLint
+yarn format         # Prettier
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Docker Services
 
-## Resources
+- **PostgreSQL**: Database (port 5432)
+- **Redis**: Queue backend (port 6379)
 
-Check out a few resources that may come in handy when working with NestJS:
+## Project Structure
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+src/
+├── common/             # Shared utilities
+│   ├── filters/        # Exception filters
+│   ├── interceptors/   # Response interceptors
+│   └── interfaces/     # Type definitions
+├── prisma/            # Database module
+├── ticket/            # Ticket module
+│   ├── dto/           # Data transfer objects
+│   ├── ticket.controller.ts
+│   ├── ticket.service.ts
+│   ├── tickets.processor.ts
+│   └── queues-admin.controller.ts
+└── main.ts            # Application entry point
+```
 
-## Support
+## Development
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Database Changes
 
-## Stay in touch
+```bash
+# Update schema
+npx prisma db push
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Generate client
+npx prisma generate
 
-## License
+# View database
+npx prisma studio
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Queue Monitoring
+
+Access queue stats via `/admin/queues/tickets/stats`
